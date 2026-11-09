@@ -143,12 +143,14 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   #explore-list section { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }
   #explore-list h2 { grid-column: 1 / -1; }
   #explore-list [data-view] { min-height: 38px; }
-  /* Phones: the rides sit on top of the folded menu bar, one row of four. */
-  .rides { order: -1; padding: 8px 8px 0; }
+  /* Phones: the rides are a slim row of four pills on top of the folded menu bar, so the map keeps its room. */
+  .rides { order: -1; padding: 6px 6px 0; }
   .rides h2 { display: none; }
-  .rides-grid { grid-template-columns: repeat(4, 1fr); }
-  .rides [data-view] { min-height: 52px; font-size: 12px; }
-  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 124px); }
+  .rides-grid { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .rides [data-view] { flex-direction: row; gap: 5px; min-height: 34px; padding: 0 4px; border-radius: 999px; font-size: 12px; }
+  .rides svg { width: 16px; height: 16px; flex: none; }
+  .rides span { white-space: nowrap; }
+  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 104px); }
   #caption { padding: 10px 14px; }
   .explore:has(#explore-list:not([hidden])) ~ .bottom { display: none; } /* The open menu takes the caption's place. */
   #hint { display: none; }
@@ -156,4 +158,5 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   #about { padding: 24px 20px 20px; }
   #about h2 { font-size: 26px; }
 }
+@media (max-width: 380px) { .rides svg { display: none; } } /* Narrow phones: the ride labels alone, so they stay on one line. */
 @media (prefers-reduced-motion: reduce) { #caption, #sound.waiting { animation: none; } }
