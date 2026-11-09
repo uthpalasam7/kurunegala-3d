@@ -159,6 +159,7 @@ async function main() {
     try { localStorage.setItem('kurunegala-explore', open ? 'open' : 'closed'); } catch { /* Not remembered. */ }
   });
   const caption = $('#caption');
+  let captionTimer = 0;
   function select(name) {
     buttons.forEach(b => {
       const on = b.dataset.view === name;
@@ -167,6 +168,8 @@ async function main() {
     });
     const text = CAPTIONS[name];
     caption.hidden = !text;
+    clearTimeout(captionTimer);
+    if (text && phone.matches) captionTimer = setTimeout(() => { caption.hidden = true; }, 7000); // Phones get their map back.
     if (text) {
       caption.querySelector('h2').textContent = text[0];
       caption.querySelector('p').textContent = text[1];
@@ -359,6 +362,12 @@ async function main() {
     const resume = (e) => { if (!e.target.closest?.('#sound') && !audio.enabled) setSound(true); removeEventListener('pointerdown', resume); };
     addEventListener('pointerdown', resume);
   }
+  // On phones, time, weather and sound fold behind one button.
+  const quick = $('.quick-toggle'), conditions = $('.conditions');
+  const foldQuick = (open) => { conditions.classList.toggle('open', open); quick.setAttribute('aria-expanded', open); };
+  quick.addEventListener('click', () => foldQuick(!conditions.classList.contains('open')));
+  renderer.domElement.addEventListener('pointerdown', () => foldQuick(false));
+  caption.addEventListener('click', () => { if (phone.matches) caption.hidden = true; });
   const rain = buildRain(scene, { low });
   const weatherButtons = document.querySelectorAll('.weather button');
   const setWeather = (kind, instant = false) => {

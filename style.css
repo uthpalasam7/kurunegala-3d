@@ -24,6 +24,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .time button, .weather button, .sound button { min-height: 36px; padding: 0 15px; border-radius: 999px; color: var(--muted); white-space: nowrap; transition: background .2s, color .2s; }
 .time button:hover, .weather button:hover, .sound button:hover { color: var(--ink); background: rgba(255, 248, 236, .1); }
 .time button, .weather button, .sound button { display: grid; place-items: center; width: 38px; padding: 0; }
+.quick-toggle { display: none; }
 .conditions svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 #sound .if-on { display: none; }
 #sound.on .if-on { display: inline; }
@@ -114,22 +115,28 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 @media (max-width: 720px) {
   .brand { left: 16px; }
   .turn { top: 132px; right: 12px; grid-template: repeat(3, 32px) / repeat(3, 32px); padding: 3px; }
-  .brand h1 { font-size: 27px; }
+  .brand h1 { font-size: 24px; }
   .brand p { font-size: 11px; }
-  .conditions { top: 82px; right: 16px; left: 16px; gap: 6px; flex-wrap: wrap; justify-content: flex-start; max-width: none; font-size: 12px; }
+  /* Phones: the map comes first, and the controls fold behind one button. */
+  .conditions { top: max(14px, env(safe-area-inset-top)); right: 12px; left: auto; flex-direction: column; flex-wrap: nowrap; align-items: flex-end; justify-content: flex-start; gap: 6px; max-width: none; font-size: 12px; }
+  .quick-toggle { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  .quick-toggle[aria-expanded="true"] { color: #1f1a12; background: var(--accent); }
+  .conditions:not(.open) > .time, .conditions:not(.open) > .weather, .conditions:not(.open) > .sound { display: none; }
+  .brand p { display: none; }
+  .turn { display: none; }
+  .credit-long { display: none; }
   #volume { width: 54px; margin: 0 8px 0 4px; }
   .time button, .weather button, .sound button { min-height: 32px; width: 36px; }
-  .explore { top: auto; left: 16px; right: 16px; bottom: max(44px, env(safe-area-inset-bottom)); width: auto; max-height: 60vh; max-height: 60dvh; }
+  .explore { top: auto; left: 16px; right: 16px; bottom: max(28px, calc(env(safe-area-inset-bottom) + 22px)); width: auto; max-height: 60vh; max-height: 60dvh; }
   .explore-here { display: block; }
   #explore-list section { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }
   #explore-list h2 { grid-column: 1 / -1; }
   #explore-list [data-view] { min-height: 38px; }
-  .bottom { left: 16px; right: 16px; bottom: calc(max(44px, env(safe-area-inset-bottom)) + 54px); }
+  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 54px); }
   #caption { padding: 10px 14px; }
   .explore:has(#explore-list:not([hidden])) ~ .bottom { display: none; } /* The open menu takes the caption's place. */
   #hint { display: none; }
-  .credit { left: 16px; right: 16px; bottom: 6px; font-size: 9.5px; line-height: 1.25; text-align: center; }
-  .maker { display: block; }
+  .credit { left: 12px; right: 12px; bottom: max(6px, env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.25; text-align: center; }
   #about { padding: 24px 20px 20px; }
   #about h2 { font-size: 26px; }
 }
