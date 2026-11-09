@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kurunegala in 3D</title>
+  <meta name="description" content="An explorable 3D model of Kurunegala, Sri Lanka, built from real elevation and map data.">
+  <meta name="theme-color" content="#f6efe2">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="3D view of Kurunegala"></canvas>
+  <div id="markers"></div>
+
+  <header class="brand">
+    <h1>Kurunegala</h1>
+    <p>කුරුණෑගල · Sri Lanka · 7.49° N, 80.36° E</p>
+  </header>
+
+  <div class="conditions">
+    <div class="time" role="group" aria-label="Time of day">
+      <button data-time="day" title="Day" aria-label="Day"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg></button>
+      <button data-time="sunset" class="on" title="Sunset" aria-label="Sunset"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 16a5 5 0 0 1 10 0M3 16h18M6 20h12M12 6v3M5 9.5l1.6 1.6M19 9.5l-1.6 1.6"/></svg></button>
+      <button data-time="night" title="Night" aria-label="Night"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"/></svg></button>
+    </div>
+    <div class="weather" role="group" aria-label="Weather">
+      <button data-weather="clear" class="on" title="Clear weather" aria-label="Clear weather"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="3"/><path d="M9 2.5v1.5M2.5 9H4M4.4 4.4l1.1 1.1M13.6 4.4l-1.1 1.1"/><path d="M10 20a3.2 3.2 0 0 1-.3-6.4 4.3 4.3 0 0 1 8.2-.8 3.6 3.6 0 0 1-.4 7.2Z"/></svg></button>
+      <button data-weather="rain" title="Rain" aria-label="Rain"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6-1.2A4.2 4.2 0 0 1 17.5 17"/><path d="M8.5 15.5 7 20M12.8 15.5 11.3 20M17 15.5 15.5 20"/></svg></button>
+      <button data-weather="storm" title="Storm" aria-label="Storm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6-1.2A4.2 4.2 0 0 1 17.5 17"/><path d="M13 12l-3 5h4l-3 5"/></svg></button>
+    </div>
+    <div class="sound">
+      <button id="sound" aria-pressed="false" aria-label="Sound" title="Turn sound on or off (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5Z"/><g class="if-on"><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></g><g class="if-off"><path d="m16 9.5 5 5M21 9.5l-5 5"/></g></svg></button>
+      <input id="volume" type="range" min="0" max="100" value="100" aria-label="Volume" hidden>
+    </div>
+  </div>
+
+  <nav class="explore" aria-label="Places to visit">
+    <button class="explore-toggle" aria-expanded="true" aria-controls="explore-list">
+      <span class="explore-title">Explore</span>
+      <span class="explore-here" id="here">Whole town</span>
+      <span class="explore-arrow" aria-hidden="true">⌃</span>
+    </button>
+    <div id="explore-list">
+      <button data-view="overview" class="whole on">Whole town</button>
+      <section>
+        <h2>Town</h2>
+        <button data-view="clock">Clock Tower</button>
+        <button data-view="town">Town Centre</button>
+        <!-- Temporarily off the map; see SHOW_PLACES in src/places.js.
+        <button data-view="stadium">Cricket Stadium</button>
+        <button data-view="mosque">Jumma Mosque</button>
+        <button data-view="kovil">Kathiresan Kovil</button>
+        -->
+      </section>
+      <section>
+        <h2>Buddha Statue</h2>
+        <button data-view="rock">The Statue</button>
+        <button data-view="steps">Stairway</button>
+        <button data-view="temple">Road &amp; Car Park</button>
+      </section>
+      <section>
+        <h2>Lake</h2>
+        <button data-view="lake">Kurunegala Lake</button>
+        <button data-view="lakeside">Exercise Park</button>
+        <button data-view="boats">Boat Jetty</button>
+        <button data-view="park">Children's Park</button>
+      </section>
+      <section>
+        <h2>Experience it</h2>
+        <button data-view="tuk">Ride a tuk-tuk</button>
+        <button data-view="boat">Ride a boat</button>
+        <button data-view="jog">Jog around the lake</button>
+        <button data-view="climb">Climb to the Buddha</button>
+      </section>
+      <button class="about-link" data-about>About this project</button>
+      <aside id="hint" hidden>
+        <p><b>Drag</b> to move · <b>Scroll</b> to zoom · <b>Arrow keys</b> or <b>↺ ↻</b> to rotate · <b>Double-click</b> to go there</p>
+        <button aria-label="Dismiss controls hint">×</button>
+      </aside>
+    </div>
+  </nav>
+
+  <div class="bottom">
+    <article id="caption" hidden>
+      <h2></h2>
+      <p></p>
+    </article>
+  </div>
+
+  <p class="credit"><a href="#about" data-about>About</a> · Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors · Elevation: Mapzen Terrain Tiles · Building heights are estimated · <a href="audio/CREDITS.md" target="_blank" rel="noopener">Sound credits</a> · <span class="maker">Developed by <a href="https://www.linkedin.com/in/uthpala-sam/" target="_blank" rel="noopener"><b>Uthpala Sam</b></a></span></p>
+
+  <div class="turn" role="group" aria-label="Rotate the view">
+    <button class="up" data-key="ArrowUp" aria-label="Tilt up" title="Tilt up (Up arrow)">▲</button>
+    <button class="left" data-key="ArrowLeft" aria-label="Rotate left" title="Rotate left (Left arrow)">↺</button>
+    <button class="right" data-key="ArrowRight" aria-label="Rotate right" title="Rotate right (Right arrow)">↻</button>
+    <button class="down" data-key="ArrowDown" aria-label="Tilt down" title="Tilt down (Down arrow)">▼</button>
+  </div>
+
+  <dialog id="about" aria-labelledby="about-title">
+    <button class="about-close" aria-label="Close">×</button>
+    <h2 id="about-title">About this project</h2>
+    <p class="about-lead">Kurunegala in 3D is a fun experiment: an explorable, stylized model of the city of Kurunegala, Sri Lanka, that runs right in your browser.</p>
+
+    <h3>Why I made this</h3>
+    <p>I wanted to see how far I could take a playful idea by working together with Claude, Anthropic's AI assistant. I started with a simple question: could real map data become a small living version of Kurunegala that anyone can wander around? This site is the result of that experiment, built step by step, one idea and one fix at a time.</p>
+
+    <h3>What you can do here</h3>
+    <ul>
+      <li>Fly around the town, Elephant Rock and Kurunegala Lake, built from real map and elevation data.</li>
+      <li>Ride a tuk-tuk or a boat, jog around the lake, or climb the stairway to the Buddha statue.</li>
+      <li>Change the time of day and the weather, from clear skies to rain and thunderstorms.</li>
+      <li>Watch traffic and people go about their day, and turn on sound to hear each place.</li>
+    </ul>
+
+    <h3>Still a work in progress</h3>
+    <p>This is not a finished or accurate model, just an experiment. Many details are still missing, and I plan to add them in the future.</p>
+    <ul>
+      <li>Most buildings are simple shapes, and their heights are estimated.</li>
+      <li>Landmarks, equipment and decorations are artistic impressions, not exact copies.</li>
+      <li>There are many more places still to be added.</li>
+      <li>Some sounds are real recordings, and others are still generated by code.</li>
+    </ul>
+    <p>Please don't rely on it for directions or real-world information.</p>
+
+    <h3>How it was made</h3>
+    <p>Built with Claude using Three.js, with map data from OpenStreetMap contributors and elevation from Mapzen Terrain Tiles. Recordings come from Wikimedia Commons, listed in the <a href="audio/CREDITS.md" target="_blank" rel="noopener">sound credits</a>.</p>
+
+    <p class="about-sign">Developed by <a href="https://www.linkedin.com/in/uthpala-sam/" target="_blank" rel="noopener">Uthpala Sam</a></p>
+  </dialog>
+
+  <div id="loader">
+    <div class="loader-copy">
+      <h1>Kurunegala</h1>
+      <p class="loader-si">කුරුණෑගල</p>
+      <p class="loader-tag">A journey through the city of the elephant rock</p>
+      <div class="bar"><i></i></div>
+      <p class="loader-state"><span id="status">Loading map data</span><span id="percent">0%</span></p>
+    </div>
+    <svg class="loader-land" viewBox="0 0 1600 560" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="880" cy="128" r="118" fill="#f0b463"/>
+      <path fill="#d9c8a8" d="M0 430V400c120-60 250-110 400-90s210 80 340 70 240-100 420-90 310 70 440 40v100Z"/>
+      <rect y="428" width="1600" height="132" fill="#e9dcc3"/>
+      <path fill="#3b4042" opacity=".16" transform="matrix(1 0 0 -.42 0 610.6)" d="M500 430C525 395 545 345 590 322C605 275 655 240 705 236C745 200 810 170 880 175C990 180 1065 270 1105 340C1125 375 1150 410 1180 430Z"/>
+      <g fill="#d99a45" opacity=".9">
+        <rect x="715" y="438" width="170" height="4" rx="2"/>
+        <rect x="750" y="452" width="100" height="4" rx="2"/>
+        <rect x="690" y="466" width="220" height="4" rx="2"/>
+        <rect x="760" y="480" width="80" height="4" rx="2"/>
+      </g>
+      <path fill="#fff8ec" transform="translate(880 182) scale(.46)" d="M-74 0C-82-20-54-37-33-40C-36-62-46-84-37-101C-30-112-16-114-8-117V-125C-16-130-20-138-19-147C-18-155-13-160-7-162C-8-169-4-175 0-177C4-175 8-169 7-162C13-160 18-155 19-147C20-138 16-130 8-125V-117C16-114 30-112 37-101C46-84 36-62 33-40C54-37 82-20 74 0Z"/>
+      <path fill="#3b4042" d="M500 430C525 395 545 345 590 322C605 275 655 240 705 236C745 200 810 170 880 175C990 180 1065 270 1105 340C1125 375 1150 410 1180 430Z"/>
+      <g fill="#fff6e4" transform="translate(640 500)">
+        <rect x="-18" y="-12" width="36" height="14"/><rect x="-12" y="-108" width="24" height="98"/><rect x="-15" y="-138" width="30" height="32"/><rect x="-18" y="-144" width="36" height="7"/><rect x="-18" y="-153" width="7" height="10"/><rect x="-3.5" y="-153" width="7" height="10"/><rect x="11" y="-153" width="7" height="10"/>
+        <circle cy="-122" r="10" fill="#2f2839"/>
+        <path d="M0-122v-7M0-122h5" stroke="#f3e1bf" stroke-width="1.800" stroke-linecap="round"/>
+        <rect x="-3" y="-90" width="6" height="16" fill="#8a7460"/><rect x="-3" y="-60" width="6" height="16" fill="#8a7460"/>
+      </g>
+      <path fill="#c7b38f" d="M0 560V505c130-40 300-52 470-30 150 20 310 34 480 14 190-22 430-40 650 6v65Z"/>
+    </svg>
+    <p class="loader-maker">Developed by <a href="https://www.linkedin.com/in/uthpala-sam/" target="_blank" rel="noopener"><b>Uthpala Sam</b></a></p>
+  </div>
+  <noscript>This 3D scene needs JavaScript and WebGL.</noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
