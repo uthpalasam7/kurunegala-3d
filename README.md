@@ -1,5 +1,7 @@
 # Kurunegala in 3D
 
+**Live site: https://kurunegala-3d.pages.dev/**
+
 An explorable, stylized 3D model of Kurunegala, Sri Lanka, in plain Three.js with no build step.
 
 ## View it

@@ -98,7 +98,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 #loader.done { opacity: 0; pointer-events: none; }
 .loader-land { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; overflow: visible; } /* Wide screens enlarge the art past this box; the sun must stay whole. */
 .loader-copy { position: absolute; z-index: 1; left: 50%; top: 11vh; width: min(420px, calc(100vw - 48px)); transform: translateX(-50%); }
-#loader h1 { margin: 0; font: 500 clamp(44px, 7vw, 68px)/1 var(--serif); letter-spacing: .01em; }
+.loader-title { margin: 0; font: 500 clamp(44px, 7vw, 68px)/1 var(--serif); letter-spacing: .01em; }
 .loader-si { margin: 8px 0 0; color: #a4661f; font-size: 19px; }
 .loader-tag { margin: 12px 0 26px; color: #54585a; font-size: 14px; }
 .bar { height: 4px; overflow: hidden; border-radius: 4px; background: rgba(36, 40, 42, .14); }
