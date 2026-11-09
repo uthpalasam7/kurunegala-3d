@@ -143,13 +143,17 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   #explore-list section { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }
   #explore-list h2 { grid-column: 1 / -1; }
   #explore-list [data-view] { min-height: 38px; }
-  /* Phones: the rides sit on top of the folded menu bar, one row of four. */
-  .rides { order: -1; padding: 8px 8px 0; }
+  /* Phones: the rides are a slim row of four pills on top of the folded menu bar, so the map keeps its room. */
+  .rides { order: -1; padding: 6px 6px 0; }
   .rides h2 { display: none; }
-  .rides-grid { grid-template-columns: repeat(4, 1fr); }
-  .rides [data-view] { min-height: 52px; font-size: 12px; }
-  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 124px); }
-  #caption { padding: 10px 14px; }
+  .rides-grid { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .rides [data-view] { position: relative; min-height: 38px; padding: 0; border-radius: 999px; }
+  .rides svg { width: 22px; height: 22px; }
+  .rides span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } /* Phones show the icon only; screen readers still hear the name. */
+  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 108px); }
+  #caption { padding: 9px 13px; }
+  #caption h2 { font-size: 17px; }
+  #caption p { font-size: 13px; line-height: 1.4; }
   .explore:has(#explore-list:not([hidden])) ~ .bottom { display: none; } /* The open menu takes the caption's place. */
   #hint { display: none; }
   .credit { left: 12px; right: 12px; bottom: max(6px, env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.25; text-align: center; }
