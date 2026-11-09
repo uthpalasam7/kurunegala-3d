@@ -49,12 +49,14 @@ async function main() {
   await step('Loading map data', 8);
   const world = await loadWorld();
   const canvas = $('#scene');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: true, powerPreference: 'high-performance' });
+  const params = new URLSearchParams(location.search);
+  // Phones and tablets get their own lighter mode. Add ?quality=high to override it.
+  const handheld = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && Math.min(screen.width, screen.height) < 900);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !handheld, stencil: true, powerPreference: 'high-performance' });
   const gl = renderer.getContext();
   const info = gl.getExtension('WEBGL_debug_renderer_info');
   const gpu = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
-  const params = new URLSearchParams(location.search);
-  const quality = params.get('quality') ?? (/swiftshader|llvmpipe|software/i.test(gpu) ? 'low' : 'high');
+  const quality = params.get('quality') ?? (handheld || /swiftshader|llvmpipe|software/i.test(gpu) ? 'low' : 'high');
   const low = quality === 'low';
 
   // If the graphics driver gives up, come back once in the lighter mode.
@@ -70,7 +72,8 @@ async function main() {
     }
   });
 
-  renderer.setPixelRatio(low ? 1 : Math.min(devicePixelRatio, 1.5));
+  const sharpness = handheld ? Math.min(devicePixelRatio, 1.25) : low ? 1 : Math.min(devicePixelRatio, 1.5);
+  renderer.setPixelRatio(sharpness);
   renderer.setSize(innerWidth, innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
@@ -97,12 +100,12 @@ async function main() {
   const setStreetLights = buildStreetLights(world, scene);
   await step('Planting trees', 66);
   const trees = buildTrees(world, scene);
-  if (low) trees.setDensity(.35);
+  if (low) trees.setDensity(handheld ? .25 : .35);
   await step('Placing the landmarks', 84);
   const landmarks = buildLandmarks(world, scene);
   await step('Filling the streets', 92);
-  const traffic = buildTraffic(world, scene, streets, { total: low ? 200 : 500 });
-  const people = buildPeople(world, scene, streets, traffic, { total: low ? 500 : 1500 });
+  const traffic = buildTraffic(world, scene, streets, { total: handheld ? 110 : low ? 200 : 500 });
+  const people = buildPeople(world, scene, streets, traffic, { total: handheld ? 220 : low ? 500 : 1500 });
 
   await step('Opening the lakeside', 94);
   const lakeside = buildLakeside(world, scene, lakeData, { low });
@@ -455,7 +458,7 @@ async function main() {
   await step('Rendering the first view', 100);
   const timer = new THREE.Clock();
   let smoothDt = 1 / 60;
-  let frames = 0, sampleTime = 0, tuned = false, clockTick = 0;
+  let frames = 0, sampleTime = 0, dropped = 0, clockTick = 0;
   const followPos = new THREE.Vector3(), followTarget = new THREE.Vector3();
 
   renderer.setAnimationLoop(() => {
@@ -527,14 +530,17 @@ async function main() {
     updatePins();
     renderer.render(scene, camera);
 
-    // Lower the detail once if this device can't keep up.
-    if (!tuned && ++frames > 12) {
+    // Keep checking, and step the detail down whenever this device can't keep up.
+    if (dropped < 3 && ++frames > 12) {
       sampleTime += dt;
       if (frames === 102) {
-        tuned = true;
-        if (90 / sampleTime < 30) {
-          renderer.setPixelRatio(1);
-          trees.setDensity(low ? .2 : .55);
+        const fps = 90 / sampleTime;
+        frames = 12; sampleTime = 0;
+        if (fps < 32) {
+          dropped++;
+          renderer.setPixelRatio(sharpness * [.85, .7, .6][dropped - 1]);
+          trees.setDensity((low ? (handheld ? .25 : .35) : .75) * [.7, .5, .35][dropped - 1]);
+          if (dropped === 3 && handheld) sky.light.castShadow = false; // The last resort: no shadows from the sun.
           shadowDirty = true;
         }
       }
@@ -555,7 +561,7 @@ async function main() {
   about.addEventListener('click', (e) => { if (e.target === about) about.close(); }); // A click on the backdrop.
   if (location.hash === '#about') about.showModal();
 
-  window.kurunegala = { audio, renderer, camera, controls, flyTo, sky, trees, scene, traffic, people, lakeside, wildlife, steps, templeRoad, places, groundPoint };
+  window.kurunegala = { handheld, audio, renderer, camera, controls, flyTo, sky, trees, scene, traffic, people, lakeside, wildlife, steps, templeRoad, places, groundPoint };
 }
 
 main().catch((error) => {
