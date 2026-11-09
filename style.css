@@ -151,7 +151,9 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   .rides svg { width: 16px; height: 16px; flex: none; }
   .rides span { white-space: nowrap; }
   .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 104px); }
-  #caption { padding: 10px 14px; }
+  #caption { padding: 9px 13px; }
+  #caption h2 { font-size: 17px; }
+  #caption p { font-size: 13px; line-height: 1.4; }
   .explore:has(#explore-list:not([hidden])) ~ .bottom { display: none; } /* The open menu takes the caption's place. */
   #hint { display: none; }
   .credit { left: 12px; right: 12px; bottom: max(6px, env(safe-area-inset-bottom)); font-size: 11px; line-height: 1.25; text-align: center; }
