@@ -49,6 +49,15 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 #explore-list [data-view] { display: block; width: 100%; min-height: 32px; padding: 0 8px; border-radius: 8px; color: var(--ink); font-size: 13.5px; text-align: left; transition: background .15s, color .15s; }
 #explore-list [data-view]:hover { background: rgba(255, 248, 236, .1); }
 #explore-list [data-view].on { color: #1f1a12; background: var(--accent); font-weight: 600; }
+/* Rides: always-visible tiles, so the four experiences don't hide at the end of the list. */
+.rides { flex: none; padding: 0 8px 10px; }
+.rides h2 { margin: 0 6px 6px; color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.rides-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.rides [data-view] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 58px; padding: 6px 4px; border: 1px solid rgba(240, 180, 99, .45); border-radius: 10px; color: var(--ink); background: rgba(240, 180, 99, .12); font-size: 12.5px; font-weight: 500; transition: background .15s, color .15s, transform .15s; }
+.rides [data-view]:hover { background: rgba(240, 180, 99, .26); transform: translateY(-1px); }
+.rides [data-view].on { color: #1f1a12; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.rides svg { width: 22px; height: 22px; fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.rides [data-view].on svg { stroke: currentColor; }
 .bottom { position: fixed; left: 270px; right: 24px; bottom: max(36px, env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
 .bottom > * { pointer-events: auto; }
 #caption { width: min(620px, 100%); padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: rise .45s ease-out; }
@@ -134,7 +143,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   #explore-list section { display: grid; grid-template-columns: 1fr 1fr; gap: 0 4px; }
   #explore-list h2 { grid-column: 1 / -1; }
   #explore-list [data-view] { min-height: 38px; }
-  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 54px); }
+  /* Phones: the rides sit on top of the folded menu bar, one row of four. */
+  .rides { order: -1; padding: 8px 8px 0; }
+  .rides h2 { display: none; }
+  .rides-grid { grid-template-columns: repeat(4, 1fr); }
+  .rides [data-view] { min-height: 52px; font-size: 12px; }
+  .bottom { left: 16px; right: 16px; bottom: calc(max(28px, calc(env(safe-area-inset-bottom) + 22px)) + 124px); }
   #caption { padding: 10px 14px; }
   .explore:has(#explore-list:not([hidden])) ~ .bottom { display: none; } /* The open menu takes the caption's place. */
   #hint { display: none; }
