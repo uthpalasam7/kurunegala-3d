@@ -167,7 +167,7 @@ async function main() {
     buttons.forEach(b => {
       const on = b.dataset.view === name;
       b.classList.toggle('on', on);
-      if (on) { here.textContent = b.textContent; b.scrollIntoView({ block: 'nearest' }); }
+      if (on) { here.textContent = b.dataset.label || b.textContent; b.scrollIntoView({ block: 'nearest' }); }
     });
     const text = CAPTIONS[name];
     caption.hidden = !text;

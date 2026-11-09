@@ -63,6 +63,16 @@
       <span class="explore-here" id="here">Whole town</span>
       <span class="explore-arrow" aria-hidden="true">⌃</span>
     </button>
+    <!-- The rides stay in view even when the menu is folded, so first-time visitors find them. -->
+    <section class="rides" aria-labelledby="rides-title">
+      <h2 id="rides-title">Experience it</h2>
+      <div class="rides-grid">
+        <button data-view="tuk" data-label="Ride a tuk-tuk" title="Ride a tuk-tuk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 16.5V10a5 5 0 0 1 5-5h5.5l4 5.5V16.5M15 5v5.5h4"/><circle cx="7.500" cy="17.500" r="2"/><circle cx="17" cy="17.500" r="2"/><path d="M9.500 17.500H15"/></svg><span>Tuk-tuk</span></button>
+        <button data-view="boat" data-label="Ride a boat" title="Ride a boat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 14h18l-3 4.500H6Z"/><path d="M12 14V3.500l6 8h-6"/><path d="M3 21c1.500 0 1.500-1 3-1s1.500 1 3 1 1.500-1 3-1 1.500 1 3 1 1.500-1 3-1 1.500 1 3 1"/></svg><span>Boat</span></button>
+        <button data-view="jog" data-label="Jog around the lake" title="Jog around the lake"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="15" cy="4.500" r="2"/><path d="M6.500 11.500 10 8.500l4.500 1.500 2 3.500H20"/><path d="M14.500 10 12 15l3.500 2.500-1 4"/><path d="M12 15l-2.500 3H5.500"/></svg><span>Jog</span></button>
+        <button data-view="climb" data-label="Climb to the Buddha" title="Climb to the Buddha"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20.500h4.500v-4h4.500v-4h4.500v-4H21"/><path d="M15 3.500h5v5M20 3.500l-6 6"/></svg><span>Climb</span></button>
+      </div>
+    </section>
     <div id="explore-list">
       <button data-view="overview" class="whole on">Whole town</button>
       <section>
@@ -87,13 +97,6 @@
         <button data-view="lakeside">Exercise Park</button>
         <button data-view="boats">Boat Jetty</button>
         <button data-view="park">Children's Park</button>
-      </section>
-      <section>
-        <h2>Experience it</h2>
-        <button data-view="tuk">Ride a tuk-tuk</button>
-        <button data-view="boat">Ride a boat</button>
-        <button data-view="jog">Jog around the lake</button>
-        <button data-view="climb">Climb to the Buddha</button>
       </section>
       <button class="about-link" data-about>About this project</button>
       <aside id="hint" hidden>
