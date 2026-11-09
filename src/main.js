@@ -344,7 +344,7 @@ async function main() {
 
   // --- Time of day -------------------------------------------------------------
   // Sound starts off. It needs a click before browsers allow it, and someone who turned it on last time gets it back on their first click.
-  const audio = buildAudio(world, { low });
+  const audio = buildAudio(world, { low: low && !handheld, mono: handheld });
   sky.onStrike = (distance, flashIn) => audio.thunder(distance, flashIn);
   const soundButton = $('#sound'), volumeSlider = $('#volume');
   const remember = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Not remembered. */ } };
@@ -362,8 +362,12 @@ async function main() {
   volumeSlider.addEventListener('input', () => { audio.setVolume(volumeSlider.value / 100); remember('kurunegala-volume', volumeSlider.value); });
   addEventListener('keydown', (e) => { if (e.code === 'KeyM' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.repeat) setSound(!audio.enabled); });
   if (recall('kurunegala-sound') === 'on') {
-    const resume = (e) => { if (!e.target.closest?.('#sound') && !audio.enabled) setSound(true); removeEventListener('pointerdown', resume); };
-    addEventListener('pointerdown', resume);
+    const types = ['click', 'touchend', 'keydown'];
+    const resume = (e) => {
+      if (!e.target.closest?.('#sound') && !audio.enabled) setSound(true);
+      types.forEach(t => removeEventListener(t, resume));
+    };
+    types.forEach(t => addEventListener(t, resume));
   }
   // On phones, time, weather and sound fold behind one button.
   const quick = $('.quick-toggle'), conditions = $('.conditions');
@@ -487,6 +491,7 @@ async function main() {
     wildlife.update(dt, sky.night);
     steps.update(dt, sky.night, focusDistance);
     places.update(dt, sky.night, focusDistance);
+    soundButton.classList.toggle('waiting', audio.enabled && audio.state !== 'running'); // Tap to start, if the phone has held it back.
     audio.update({ dt, target: controls.target, focusDistance, night: sky.night, cover: sky.cover, storm: sky.storm, followKind, followSpeed: follow?.speed });
     moveWithKeys(dt, shiftHeld);
     if (follow) {

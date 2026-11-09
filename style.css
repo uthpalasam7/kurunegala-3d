@@ -29,6 +29,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 #sound .if-on { display: none; }
 #sound.on .if-on { display: inline; }
 #sound.on .if-off { display: none; }
+#sound.waiting { animation: sound-wait 1.2s ease-in-out infinite; }
+@keyframes sound-wait { 50% { opacity: .45; } }
 #volume { width: 74px; margin: 0 10px 0 6px; accent-color: var(--accent); cursor: pointer; }
 #volume[hidden] { display: none; }
 .time button.on, .weather button.on, .sound button.on { color: #1f1a12; background: var(--accent); }
@@ -140,4 +142,4 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   #about { padding: 24px 20px 20px; }
   #about h2 { font-size: 26px; }
 }
-@media (prefers-reduced-motion: reduce) { #caption { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #caption, #sound.waiting { animation: none; } }

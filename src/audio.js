@@ -2,7 +2,7 @@
 
 // The mix. Adjust these to rebalance the sounds.
 const BALANCE = {
-  master: .8, rain: .34, rainDeep: .3, stormBoost: 1.5, thunder: 1.1, wind: .07,
+  master: .8, rain: .34, rainDeep: .3, stormBoost: 1.5, thunder: 1.1, wind: .13,
   lakeBirds: .2, pirith: .26, town: .24, lake: .2, crickets: .035, children: .05, engine: .17,
  horn: .045, bell: .1, footsteps: .22, paddle: .2,
 };
@@ -25,7 +25,7 @@ const LOUDNESS = .3; // Every recording is levelled to this, so the mix doesn't 
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const between = (a, b) => a + Math.random() * (b - a);
 
-export function buildAudio(world, { low = false } = {}) {
+export function buildAudio(world, { low = false, mono = false } = {}) {
   const { clock, lake, statue, park } = world.landmarks;
   let ctx = null, master = null, output = null, analyser = null, enabled = false, volume = 1;
   let white = null, brown = null, stormBus = null;
@@ -69,10 +69,13 @@ export function buildAudio(world, { low = false } = {}) {
   const set = (name, level) => {
     const v = voices[name];
     v.target = level;
+    if (level > .001 && RECORDINGS.loops[name]) loadLoop(name);
     v.gain.gain.setTargetAtTime(level, ctx.currentTime, .35);
   };
 
   function setup() {
+    // Without this, an iPhone's silent switch mutes the page.
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* Older browsers. */ }
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     master = gainNode(0);
     const limiter = ctx.createDynamicsCompressor();
@@ -110,14 +113,14 @@ export function buildAudio(world, { low = false } = {}) {
     stormBus = gainNode(1);
     stormBus.connect(output);
     voices.stormBus = { gain: stormBus, target: 1, feed: null };
-    loadRecordings();
   }
 
   /** Blends a recording's end into its start, so a loop has no audible seam. */
   function seamless(buffer) {
     const fade = Math.min(Math.floor(buffer.sampleRate * 1.5), Math.floor(buffer.length / 3)), length = buffer.length - fade;
-    const out = ctx.createBuffer(buffer.numberOfChannels, length, buffer.sampleRate);
-    for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const channels = mono ? 1 : buffer.numberOfChannels; // One channel halves the memory on phones.
+    const out = ctx.createBuffer(channels, length, buffer.sampleRate);
+    for (let c = 0; c < channels; c++) {
       const from = buffer.getChannelData(c), to = out.getChannelData(c);
       to.set(from.subarray(0, length));
       for (let i = 0; i < fade; i++) { const t = i / fade; to[i] = from[i] * Math.sqrt(t) + from[length + i] * Math.sqrt(1 - t); }
@@ -139,28 +142,37 @@ export function buildAudio(world, { low = false } = {}) {
     const span = power.slice(start, start + 100), loud = Math.sqrt(span.reduce((t, v) => t + v, 0) / span.length);
     return { onset: start * size / rate, clapTrim: LOUDNESS / Math.max(.005, loud) };
   }
-  const fetchRecording = async (url) => {
-    const buffer = await fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.arrayBuffer(); }).then(b => ctx.decodeAudioData(b));
-    const data = buffer.getChannelData(0);
-    let sum = 0, n = 0;
-    for (let i = 0; i < data.length; i += 37) { sum += data[i] * data[i]; n++; }
-    return { buffer, trim: LOUDNESS / Math.max(.005, Math.sqrt(sum / n)), ...findClap(data, buffer.sampleRate) };
+  const recordings = new Map();
+  const fetchRecording = (url) => {
+    if (!recordings.has(url)) recordings.set(url, (async () => {
+      const buffer = await fetch(url).then(r => { if (!r.ok) throw new Error(url); return r.arrayBuffer(); }).then(b => ctx.decodeAudioData(b));
+      const data = buffer.getChannelData(0);
+      let sum = 0, n = 0;
+      for (let i = 0; i < data.length; i += 37) { sum += data[i] * data[i]; n++; }
+      return { buffer, trim: LOUDNESS / Math.max(.005, Math.sqrt(sum / n)), ...findClap(data, buffer.sampleRate) };
+    })());
+    return recordings.get(url);
   };
-  async function loadRecordings() {
-    for (const [name, { url, boost = 1, lowpass }] of Object.entries(RECORDINGS.loops)) {
-      try {
-        const { buffer, trim } = await fetchRecording(url), v = voices[name], s = ctx.createBufferSource(), g = gainNode(trim * boost);
-        s.buffer = seamless(buffer); s.loop = true;
-        v.feed?.disconnect();
-        if (lowpass) chain(s, g, filter('lowpass', lowpass), v.gain); else chain(s, g, v.gain);
-        s.start(0, Math.random() * s.buffer.duration);
-        v.recording = s;
-      } catch (e) { console.warn('Keeping the generated sound for', name, e); }
-    }
-    for (const [name, urls] of Object.entries(RECORDINGS.shots)) {
-      for (const url of urls) {
-        try { (shots[name] ||= []).push(await fetchRecording(url)); } catch (e) { console.warn('Could not load', url, e); }
-      }
+  // Recordings download only when something first needs them, so starting sound stays quick.
+  const requested = new Set();
+  async function loadLoop(name) {
+    if (requested.has(name)) return;
+    requested.add(name);
+    const { url, boost = 1, lowpass } = RECORDINGS.loops[name];
+    try {
+      const { buffer, trim } = await fetchRecording(url), v = voices[name], s = ctx.createBufferSource(), g = gainNode(trim * boost);
+      s.buffer = seamless(buffer); s.loop = true;
+      v.feed?.disconnect();
+      if (lowpass) chain(s, g, filter('lowpass', lowpass), v.gain); else chain(s, g, v.gain);
+      s.start(0, Math.random() * s.buffer.duration);
+      v.recording = s;
+    } catch (e) { console.warn('Keeping the generated sound for', name, e); }
+  }
+  async function loadShots(name) {
+    if (requested.has(`shot:${name}`)) return;
+    requested.add(`shot:${name}`);
+    for (const url of RECORDINGS.shots[name] || []) {
+      try { (shots[name] ||= []).push(await fetchRecording(url)); } catch (e) { console.warn('Could not load', url, e); }
     }
   }
   /** Plays a recording of this sound if there is one. */
@@ -229,6 +241,9 @@ export function buildAudio(world, { low = false } = {}) {
   }
 
   function applyVolume() { if (ctx) master.gain.setTargetAtTime(enabled ? BALANCE.master * volume : 0, ctx.currentTime, .12); }
+  // Phones only allow audio to start from a finished tap, and can pause it after a call, so keep trying.
+  const unlock = () => { if (ctx && enabled && ctx.state !== 'running') ctx.resume(); };
+  for (const type of ['touchend', 'click', 'keydown']) addEventListener(type, unlock, { capture: true, passive: true });
   document.addEventListener('visibilitychange', () => {
     if (!ctx || !enabled) return;
     if (document.hidden) ctx.suspend(); else ctx.resume();
@@ -255,9 +270,10 @@ export function buildAudio(world, { low = false } = {}) {
     update({ dt, target, focusDistance, night, cover, storm, followKind, followSpeed }) {
       if (!ctx || !enabled || ctx.state !== 'running') return;
       const near = 1 - clamp((focusDistance - 220) / 1100), wide = 1 - clamp((focusDistance - 700) / 2200), day = 1 - clamp(night), dry = 1 - clamp(cover);
-      const inTown = close(target, clock, RADIUS.town) * near, atLake = close(target, lake, RADIUS.lake) * wide, atStatue = close(target, statue, RADIUS.statue), atPark = close(target, park, RADIUS.park) * near;
+      const inTown = close(target, clock, RADIUS.town) * Math.max(near, .42), atLake = close(target, lake, RADIUS.lake) * wide, atStatue = close(target, statue, RADIUS.statue), atPark = close(target, park, RADIUS.park) * near;
       const nature = clamp(1 - inTown * 1.3);
 
+      if (storm > .2) loadShots('thunder');
       const fall = cover * (1 + storm * (BALANCE.stormBoost - 1));
       set('rain', BALANCE.rain * fall * (.75 + .25 * near));
       set('rainDeep', BALANCE.rainDeep * cover * storm);
