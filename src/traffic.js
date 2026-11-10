@@ -147,6 +147,8 @@ export function attachGroundShadow(mesh, scene, swingShader = '') {
   return shadow;
 }
 
+// Overall traffic pace: scales every vehicle's cruising speed and the town speed limit.
+const PACE = 1.15;
 const FEEL = {
   tuk: { width: 1.4, accel: 2, radius: 3.8, stopEvery: [350, 1300], dwell: [3, 7] },
   bike: { width: .75, accel: 3.6, radius: 3, stopEvery: null },
@@ -396,11 +398,11 @@ export function buildTraffic(world, scene, streets, { total = 500 } = {}) {
     }
 
     const w = v.link.edge.w;
-    const road = (w >= 10 ? 13.5 : w >= 8 ? 11 : w >= 6 ? 8.5 : 6) * v.type.speed * v.pace;
+    const road = (w >= 10 ? 13.5 : w >= 8 ? 11 : w >= 6 ? 8.5 : 6) * v.type.speed * v.pace * PACE;
     // Drivers ease off and speed up all the time rather than holding one speed.
     let target = road * (1 + .17 * Math.sin(clockTime * v.f1 + v.p1) + .09 * Math.sin(clockTime * v.f2 + v.p2));
 
-    target = Math.min(target, v.link.edge.temple ? 6.6 : 13.2); // About 48 km/h in town, much slower on the temple road.
+    target = Math.min(target, (v.link.edge.temple ? 6.6 : 13.2) * PACE); // About 55 km/h in town, much slower on the temple road.
 
     // Slow for bends and turns ahead, more for long vehicles.
     laneAt(v, v.s + 17, q);
